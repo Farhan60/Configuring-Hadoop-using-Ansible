@@ -1,0 +1,42 @@
+- hosts: all
+  tasks:
+    - name: "yum"
+      yum_repository:
+        name: docker
+        description: docker
+        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable/
+        gpgcheck: no
+ 
+   - name: "Docker Installation"
+     command: yum install docker-ce --nobest -y
+     ignore_errors= yes
+    
+   - name: "Enabling docker service"
+     service:
+       name: "docker"
+       state: started
+
+   - name: "Docker SDK"
+            command: pip3 install docker
+
+   - name: "Creating directory to mount with docker image"
+     file:
+       path: /root/webpage
+       state: directory
+
+   - name: "Copying webpage to Managed Node"
+     copy:
+       src: /Ansible1/webpage/index.html
+       dest: /root/webpage/
+
+   - name: pull an image
+     docker_container:
+       name: MyWebServer
+       image: httpd
+       state: started
+       exposed_ports:
+         - "80"
+       ports:
+         - "9876:80"
+       volumes:
+         - /root/webpage:/usr/local/apache2/htdocs/
